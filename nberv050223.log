@@ -1,0 +1,70 @@
+loading ...mort1988.csv
+saving ...mort1988.dta
+loading ...mort1989.csv
+saving ...mort1989.dta
+loading ...mort1990.csv
+saving ...mort1990.dta
+loading ...mort1991.csv
+saving ...mort1991.dta
+loading ...mort1992.csv
+saving ...mort1992.dta
+loading ...mort1993.csv
+saving ...mort1993.dta
+loading ...mort1994.csv
+saving ...mort1994.dta
+loading ...mort1995.csv
+saving ...mort1995.dta
+loading ...mort1996.csv
+saving ...mort1996.dta
+loading ...mort1997.csv
+saving ...mort1997.dta
+loading ...mort1998.csv
+saving ...mort1998.dta
+loading ...mort1999.csv
+saving ...mort1999.dta
+loading ...mort2000.csv
+saving ...mort2000.dta
+loading ...mort2001.csv
+saving ...mort2001.dta
+loading ...mort2002.csv
+saving ...mort2002.dta
+loading ...mort2003.csv
+saving ...mort2003.dta
+loading ...mort2004.csv
+saving ...mort2004.dta
+loading ...mort2005.csv
+saving ...mort2005.dta
+loading ...mort2006.csv
+saving ...mort2006.dta
+loading ...mort2007.csv
+saving ...mort2007.dta
+loading ...mort2008.csv
+saving ...mort2008.dta
+loading ...mort2009.csv
+saving ...mort2009.dta
+loading ...mort2010.csv
+saving ...mort2010.dta
+loading ...mort2011.csv
+saving ...mort2011.dta
+loading ...mort2012.csv
+saving ...mort2012.dta
+loading ...mort2013.csv
+saving ...mort2013.dta
+loading ...mort2014.csv
+saving ...mort2014.dta
+loading ...mort2015.csv
+saving ...mort2015.dta
+loading ...mort2016.csv
+saving ...mort2016.dta
+loading ...mort2017.csv
+saving ...mort2017.dta
+loading ...mort2018.csv
+saving ...mort2018.dta
+no variables defined
+r(111);
+
+end of do-file
+
+r(111);
+
+. exit, clear
