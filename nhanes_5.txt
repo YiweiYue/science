@@ -1,0 +1,241 @@
+
+**Increasing access to the NHANES 1988-2018 surveys & mortality linkage data via a user-friendly Stata program**
+
+ Yiwei Yue
+
+**Background:** 
+
+We are developing skills that allow us to access publicly available large databases that may be queried to answer fundamental questions about the publics health. These datasets might exist in formats unfamiliar to Stata users or in sizes that cripple ones workflow. 
+
+In our first two weeks, we curated a dataset with all the [mortality records](https://data.nber.org/mortality/) in the United States from 1959-2017 and wrote a basic Stata script that output a [two-way plot](https://jhustata.github.io/book/_downloads/9359d2ae4f8ad2efcfe2fd34e3547c35/mortality.png) showing annual trends in number of deaths during this period. In the subsequent two weeks we wrote a Stata program, `mortality`, that allows the user to define the time-period of interest, plus other parameters such as cause-of-death, and ultimately produce a similar two-way plot with the convenience of a Stata command.
+
+
+Our goal for the second-half of the class is to leverage this experience to give Stata users access to the entire range of NHANES surveys via a simple command, `nhanes`, with several user-defined options. We have not yet articulated what these options are but will do so on an emerging basis each week.
+
+Today let's start by reading in the alpha-version of this program, which we adopted from Chapter: `r(mean)` of the PH.340.600 book. Depending on your Stata edition, this program will either import a dataset with 20,000 observations and 3600 variables or 20,000 observations and 22 variables:
+
+```
+<<dd_do>>
+capture program drop nhanes
+program define nhanes 
+    
+	preserve 
+	    
+		qui {
+			
+			if 0 { //background:r(mean) 
+				
+				1. Stata/BE or IC
+				2. r(k) < 2048
+				3. exam.DAT: r(k) == 2368
+				4. inaccessible to jhustata
+				5. program to grant access
+				
+			}
+			
+			if 1 { //methods:$keepvars
+				
+				timer on 1
+				
+				global github https://raw.githubusercontent.com/
+				global jhustata jhustata/book/main/
+				global keepvars HSAGEIR BMPHT BMPWT HAZA8AK1 CEP GHP HAB1
+				
+				timer off 1
+											
+			}
+			
+			if 2 { //results:.dofiles
+			
+			    timer on 2
+				
+				clear
+				
+				do ${github}${$jhustata}nh3mort.do 
+				
+				if c(edition_real) == "BE"  | c(edition_real) == "IC" {
+					
+					clear 
+					
+					do ${github}${$jhustata}nhanes-alpha-if2.do 
+					
+				}
+				
+				else { 
+					
+					clear 
+					
+					do ${github}${$jhustata}nhanes-alpha-if0.do
+					
+				}
+				
+				
+				timer off 2
+				
+			}
+			
+			if 3 { //conclusions:queueing
+			
+			    timer on 3
+			
+			    timer on 31
+				clear
+				do adult.do
+				rename *,lower
+				save adult.dta,replace 
+				timer off 31
+				
+				timer on 32
+				clear 
+				do exam.do
+				rename *,lower
+				save exam.dta,replace 
+				timer off 32
+				
+				timer on 33
+				clear
+				do lab.do
+				rename *,lower
+				save lab.dta,replace 
+				timer off 33
+				
+				timer off 3
+				
+			}
+
+			if 4 { //acknowledge:linkage
+				
+				timer on 4
+				
+				use adult, clear
+				merge 1:1 seqn using exam,nogen
+				merge 1:1 seqn using lab,nogen
+				merge 1:1 seqn using nh3mort,nogen keep(matched)
+				
+				timer off 4
+				
+			}
+			
+			if 5 { //dataset4class:
+				
+				timer on 5
+				
+				compress
+				lab dat "NHANES 1988-1994, survey & mortality"
+				save "nh3andmort.dta", replace 
+				
+				timer off 5
+				
+			}
+			
+			if 6 { //survivalanalysis:
+				
+				timer on 6
+				
+        		lookfor mort
+        		codebook mortstat
+        		lookfor follow
+        		g years=permth_exm/12
+
+        		lookfor health
+        		codebook hab1
+        		global subgroup: var lab hab1
+    
+        		stset years, fail(mortstat)
+
+        		#delimit ;
+        		sts graph if inrange(hab1,1,5),
+        		   by(hab1)
+        		   fail
+        		   ti("Mortality in NHANES III",pos(11))
+        		   subti("by self report: ${subgroup}",pos(11))
+        		   yti("%",orientation(horizontal))
+        		   xti("Years")
+        		   per(100)
+        		   ylab(0(20)80,
+        		       format(%3.0f)
+        		       angle(360)
+        		   )
+        		   legend(on
+        		       lab(1 "Excellent")
+        		       lab(2 "Good")
+        		       lab(3 "Fair")
+        		       lab(4 "Bad")
+        		       lab(5 "Poor")
+        		       ring(0)
+        		       pos(11)
+        		       col(1)
+        		       order(5 4 3 2 1)
+        		   )
+        		   note("Source: RDC/NCHS/CDC/DHHS")  
+        		;
+        		#delimit cr
+        		
+        		graph export nh3andmort.png,replace 
+        		
+        		stcox i.hab1 if inrange(hab1,1,5)
+		
+		
+				timer off 6
+				
+			}
+			
+			noi timer list 
+			
+		}
+			
+	restore 
+	
+end 
+nhanes
+<</dd_do>>
+```
+
+     
+
+**Methods:** 
+
+For Stata/BE or IC users this current program outputs an NHANES dataset with 22 pre-specified variables. Over the next week we shall release the next iteration of the program, which will allow the user to list the variables they wish to be imported from the CDC website.
+
+**Results:**
+
+When a Kaplan-Meier graph pops up on your screen, that will be your cue that the program has run to completion and that you have an NHANES III dataset in your `pwd`.
+
+```
+<<dd_do:nooutput>>
+set scheme s2color
+nhanes
+<</dd_do>>
+```
+
+<<dd_graph>>
+
+**Conclusions:** 
+
+Now that we have established our workflow, updates to our program will be published on a weekly basis and the URL will be sent to the student team as well as the teaching team in the first five minutes of each class session. A question not to ask: shall we ever need to annotate our .do files if we can offer much richer documentation in e-books built using .html?
+
+
+```
+<<dd_do>>
+use nh3andmort, clear
+di "obs: `c(N)' & vars: `c(k)'"      
+<</dd_do>>
+```
+
+**Acknowledgments:** 
+
+We initially published our Stata output in a Jupiter-book hosted by Github. All the .html content of the book was produced in a Python environment; however, [Stata .html output](nhanes.html) will gradually replace the Python-based output of the book as we truly become advanced Stata users!
+
+VS Code terminal is our IDE choice for committing and pushing our git content to our hub and have established a seamless process for updating our publication.
+
+**References:**
+
+1. https://jhustata.github.io/book/jjj.html
+2. https://jupyterbook.org/en/stable/start/your-first-book.html
+3. https://www.stata.com/stata-news/news36-1/spotlight-markdown/
+4. https://wwwn.cdc.gov/nchs/data/nhanes3/1a/adult.sas
+5. https://jhustata.github.io/class700/intro.html
+6. https://www.jhsph.edu/courses/course/37447/2022/340.700.71/advanced-stata-programming
+7. [Muzaale AD. Databases for surgical health services research: National Health and Nutrition Examination Survey. Surgery. 2019 May;165(5):873-875](https://www.surgjournal.com/article/S0039-6060(18)30076-X/fulltext)
+8. https://www.ssc.wisc.edu/~hemken/Stataworkshops/dyndoc%20review/Review.html
+9. https://towardsdatascience.com/write-markdown-latex-in-the-jupyter-notebook-10985edb91fd

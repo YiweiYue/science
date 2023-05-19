@@ -1,5 +1,5 @@
 clear 
-cd "C:\Users\Lele\Documents\open"
+cd "C:\Users\Lele\Desktop\stata700"
 quietly {
 				if c(N) { //background 
 					1. adapted from chapter:twoway
@@ -42,17 +42,15 @@ quietly {
 			}
 
 	
-			//file mort1959.csv not found r(601);
-			
-			
+	
 			
 			qui {
 	qui {
-		if c(N) {
-			1.appended 1988_2018
-			2.create one large file
-			3.save that analytic file
-		}
+		//if c(N) {
+			//1.appended 1988_2018
+			//2.create one large file
+			//3.save that analytic file
+		//}
 		if c(N)<1{
 			que mem
 			capture log close
@@ -75,15 +73,15 @@ quietly {
 	  log close 
 	}
 }
+//obs:4325055, vars:207
 
 
 qui {
-	qui {
-		if c(N) { //background
-			1.produce twoway plot 
-			2.us mortality: 1988-2018
-			3.jhustata.github.io/book/jjj.html
-		}
+	//qui {
+		//if c(N) { //background
+			//1.produce twoway plot 
+			//2.us mortality: 1988-2018
+			//3.jhustata.github.io/book/jjj.html}
 		if c(N)<1 { //methods
 			capture log close 
 			log using nber.twoway.log,replace 
@@ -91,7 +89,7 @@ qui {
 		}
 		if c(N)<2 { //results
 		    timer on 2
-			use year datayear using mort1988_2018 
+			use year datayear using mort1988_2018.dta 
 			noi di "obs:`c(N)', vars:`c(k)'"
 			timer off 2
 		}
@@ -126,8 +124,51 @@ qui {
 }
 
 
+***nbermort Stata Program Code
+***adapted from Pat's codes:https://pdona17.github.io/class700/chapter3.html
+clear 
+cd "C:\Users\Lele\Documents\open"
 
-sssssssssssssssssss
+qui{
+	
+	//capture program drop nbermort
+	//program define nbersmort
+	
+	syntax , [yearstart (int 4)] [yearend (int 4)]
+	
+	global url https://data.nber.org/mortality/
+	clear
+	gen deaths = .
+	gen year = .
+	save mortdata, replace
+	
+	forvalues i = `yearstart' / `yearend'{
+		assert inrange(`yearstart', 1988, 2018)
+		assert inrange(`yearend', 1988, 2018)
+		use "${url}`i'/mort`i'", clear
+		g deaths=1
+		collapse (count) deaths
+		gen year = `i'
+	    save yr`i', replace
+		use mortdata, clear
+		append using yr`i'
+		save mortdata, replace
+		
+	}
+	
+	use mortdata, clear
+	
+	gen deaths1k = deaths / 1000
+	
+	#delimit ;
+	line deaths1k year,
+	xtit("Year")
+	ytit("Deaths in thousands")
+	;
+	#delimit cr
+//end
+//nbermort, yearstart(1988) yearend(2018)	
+}
 
 
 
